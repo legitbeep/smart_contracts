@@ -24,19 +24,25 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
     bool public revealed = false;
 
     constructor() ERC721("DumbPeople", "DPP") {
-        setHiddenMetadataUri("ipfs://__CID__/hidden.json"); // not required for now
+        setHiddenMetadataUri(""); // not required for now
+    }
+
+    // required by solidity
+    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
     }
 
     modifier mintCompliance(uint256 _mintAmnt){
         require(_mintAmnt > 0 && _mintAmnt <= maxMintAmountPerTx, "Invalid mint amount!");
         require(supply.current() + _mintAmnt <= maxSupply, "Max supply exceeded");
+        _;
     }
     // NFTs minted
     function totalSupply () public view returns (uint256) {
         return supply.current();
     }
 
-    function mint(uint256 _mintAmnt) public payable mintCompliance(_mintAmount) {
+    function mint(uint256 _mintAmnt) public payable mintCompliance(_mintAmnt) {
         require(!paused, "The contract is paused!");
         require(msg.value >= cost * _mintAmnt, "Insufficient funds!");
         // unsure what this does
@@ -76,7 +82,7 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
     public
     view
     virtual
-    override
+    override(ERC721, ERC721URIStorage)
     returns (string memory) {
         require (
             _exists(_tokenId),
