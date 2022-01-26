@@ -17,7 +17,7 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
     string public hiddenMetadataUri;
 
     uint256 public cost = 0.01 ether;
-    uint256 public maxSupply = 10000;
+    uint256 public maxSupply = 2743;
     uint256 public maxMintAmountPerTx = 5;
 
     bool public paused = true;
@@ -25,7 +25,10 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
 
     constructor() ERC721("DumbPeople", "DPP") {
         setHiddenMetadataUri(""); // not required for now
+        setRevealed(true);
     }
+
+    event Minted(address _receiver,uint256 metadata);
 
     // required by solidity
     function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
@@ -60,7 +63,7 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
             uint256 ownerTokenCount = balanceOf(_owner);
             // list of owned tokens ID
             uint256[] memory ownedTokensId = new uint256[](ownerTokenCount);
-            uint256 curTokenId = 0; // or 1;
+            uint256 curTokenId = 1; 
             // index to insert current token ID at
             uint256 ownedTokenIndex = 0;
 
@@ -71,7 +74,6 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
                     ownedTokensId[ownedTokenIndex] = curTokenId;
                     ownedTokenIndex++;
                 }
-
                 curTokenId++;
             }
 
@@ -127,6 +129,10 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
         paused = _state;
     }
 
+    function setMaxSupply(uint256 _maxSupply) public onlyOwner {
+        maxSupply = _maxSupply;
+    }
+
     function withdraw() public onlyOwner {
         (bool os, ) = payable(owner()).call{value: address(this).balance}("");
         require(os);
@@ -136,10 +142,15 @@ contract DumbPeople is ERC721, ERC721URIStorage, Ownable {
         for (uint256 i=0; i<_mintAmount; i++){
             supply.increment();
             _safeMint(_receiver, supply.current());
+            emit Minted(_receiver, supply.current());
         }
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
         return uriPrefix;
+    }
+
+    function selfDestruct(address adr) public onlyOwner {
+        selfdestruct(payable(adr));
     }
 }
