@@ -1,1 +1,1 @@
-f4tc4t was here.
+this is smart contract repo
