@@ -1,1 +1,1 @@
-this is smart contract repo
+this is smart contract repo.
